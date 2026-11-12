@@ -21,6 +21,9 @@
 /.wrangler/
 .dev.vars*
 
+# local development fallbacks (plain `next dev`)
+/.dev/
+
 # agent tooling (local only)
 /.agents/
 /skills-lock.json

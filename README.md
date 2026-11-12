@@ -26,7 +26,7 @@
 
 ## Requirements
 
-- Node.js 20+
+- Node.js 20+ (Node 22.5+ recommended: the `.dev/` SQLite fallback uses `node:sqlite`)
 - A Cloudflare account (D1 is required, R2 is optional)
 - Wrangler (via `npx`, no global install needed)
 
@@ -111,14 +111,36 @@ Log in with **email or username** at `/th/login` or `/en/login`.
 
 ## 5. Run
 
+Two local modes are supported.
+
+### A. `npm run dev` — plain Next.js dev server (no WSL, no VC++ runtime needed)
+
 ```bash
-npm run cf:build     # build the OpenNext worker (required before cf:dev)
-npm run cf:dev       # wrangler dev -> http://localhost:8788
+npm run dev     # http://localhost:3000
 ```
 
-`npm run dev` (plain Next dev) **will fail at runtime** because `getDB()` needs the Cloudflare context. Always use the Wrangler path.
+When there is no Cloudflare context, the app falls back to a local SQLite database and
+filesystem storage under `.dev/` (git-ignored):
 
-> **Windows note:** if `wrangler dev` crashes with `access violation` / `stack overflow` (`workerd`), install the latest **Microsoft Visual C++ Redistributable (x64)** and retry, or run the same commands inside **WSL2**.
+- `.dev/d1.sqlite` — created automatically from `migrations/d1/*.sql` on first request.
+- `.dev/storage/` — local stand-in for the R2 bucket (photos, receipts).
+
+Reset everything with `rm -rf .dev` (Windows: `rmdir /s /q .dev`) and restart the server.
+This fallback is development-only; the Cloudflare build always uses the real `DB` / `STORAGE` bindings.
+
+### B. `npm run cf:dev` — real Wrangler runtime (D1 + R2 bindings)
+
+```bash
+npm run cf:build     # build the OpenNext worker (required before cf:dev)
+npm run cf:dev       # http://localhost:8788
+```
+
+`npm run dev` cannot use the Cloudflare bindings and `cf:dev` cannot use the `.dev/` fallback —
+they are separate data stores.
+
+> **Windows note:** if `wrangler dev` crashes with `access violation` / `stack overflow` (`workerd`),
+> use mode A, install the latest **Microsoft Visual C++ Redistributable (x64)** and retry, or run
+> Wrangler inside **WSL2**.
 
 ---
 
@@ -146,6 +168,7 @@ Then run the bootstrap request against the production URL once, and verify:
 | Command | Description |
 | --- | --- |
 | `npm run cf:build` | Build the OpenNext/Cloudflare bundle into `.open-next/` |
+| `npm run dev` | Local dev on port 3000 using the `.dev/` SQLite fallback |
 | `npm run cf:dev` | Run the app locally on Wrangler (D1/R2 bindings, port 8788) |
 | `npm run cf:preview` | Build + run locally in one step |
 | `npm run cf:deploy` | Build and deploy the Worker |
@@ -194,6 +217,7 @@ src/lib/auth.ts            session cookie auth on D1
 src/lib/password.ts        PBKDF2-SHA256 hash/verify
 src/lib/permissions.ts     role defaults + override resolution
 src/lib/db.ts              getDB() / getStorage() via getCloudflareContext()
+src/lib/dev-sqlite.ts      local D1/R2 stand-ins for plain `next dev` (`.dev/`)
 migrations/d1/             SQLite schema + seed
 docs/legacy/supabase/      archived pre-migration SQL (not used)
 messages/                  th.json / en.json
@@ -208,6 +232,7 @@ messages/                  th.json / en.json
 | Core MVP (auth, equipment, QR, checkout, users, master data, audit) | ✅ Done |
 | Reports (5 sets + CSV) | ✅ Done |
 | Cloudflare D1 schema + seed (remote) | ✅ Applied |
+| Local dev without workerd (`npm run dev` + `.dev/` SQLite) | ✅ Working |
 | R2 file storage | ⏳ Awaiting R2 activation on the account |
 | First admin (bootstrap) | ⏳ Not created yet |
 | Deployment | ⏳ Not deployed |
