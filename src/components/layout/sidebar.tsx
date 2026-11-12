@@ -4,6 +4,7 @@
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { usePermissions } from "@/components/providers/permissions-provider";
 import type { PermissionKey } from "@/lib/constants";
@@ -58,7 +59,13 @@ const SETTINGS_ITEMS: NavItem[] = [
   { key: "audit", href: "/settings/audit", icon: ScrollText, anyOf: ["audit:read"] },
 ];
 
-export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
+export function Sidebar({
+  onNavigate,
+  pendingCheckoutCount = 0,
+}: {
+  onNavigate?: () => void;
+  pendingCheckoutCount?: number;
+}) {
   const t = useTranslations("nav");
   const params = useParams();
   const pathname = usePathname();
@@ -89,7 +96,17 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
       >
         <Icon className="h-4 w-4 shrink-0" />
         <span className="truncate">{t(item.key)}</span>
-        {active && <ChevronRight className="ml-auto h-4 w-4 opacity-70" />}
+        {item.key === "checkout" && pendingCheckoutCount > 0 && (
+          <Badge
+            variant="destructive"
+            className="ml-auto h-5 min-w-5 justify-center px-1.5 text-[10px]"
+          >
+            {pendingCheckoutCount}
+          </Badge>
+        )}
+        {active && (
+          <ChevronRight className="ml-auto h-4 w-4 opacity-70" />
+        )}
       </Link>
     );
   };

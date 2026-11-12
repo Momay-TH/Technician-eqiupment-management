@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
 import { getAuthContext, destroySession } from "@/lib/auth";
+import { getDB } from "@/lib/db";
 import { PermissionsProvider } from "@/components/providers/permissions-provider";
 import { AppShell } from "@/components/layout/app-shell";
 
@@ -24,6 +25,24 @@ export default async function AppLayout({
     redirect(`/${locale}/login?inactive=1`);
   }
 
+  const db = getDB();
+  const canApproveOrReadAll =
+    permissions.includes("checkout:approve") ||
+    permissions.includes("checkout:read_all");
+
+  let pendingCheckoutCount = 0;
+  if (canApproveOrReadAll) {
+    const r = (await db
+      .prepare("SELECT COUNT(*) AS c FROM checkout_requests WHERE status = 'pending'")
+      .first()) as { c: number } | null;
+    pendingCheckoutCount = r?.c ?? 0;
+  }
+
+  const unreadNotif = (await db
+    .prepare("SELECT COUNT(*) AS c FROM notifications WHERE user_id = ? AND is_read = 0")
+    .bind(profile.id)
+    .first()) as { c: number } | null;
+
   return (
     <PermissionsProvider
       user={{
@@ -35,7 +54,12 @@ export default async function AppLayout({
       }}
       permissions={permissions}
     >
-      <AppShell>{children}</AppShell>
+      <AppShell
+        pendingCheckoutCount={pendingCheckoutCount}
+        unreadNotificationCount={unreadNotif?.c ?? 0}
+      >
+        {children}
+      </AppShell>
     </PermissionsProvider>
   );
 }

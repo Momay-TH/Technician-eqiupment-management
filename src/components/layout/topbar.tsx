@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { usePermissions } from "@/components/providers/permissions-provider";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -16,7 +17,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Globe, LogOut, Menu, UserRound, Bell } from "lucide-react";
 
-export function Topbar({ onMenu }: { onMenu: () => void }) {
+export function Topbar({
+  onMenu,
+  unreadNotificationCount = 0,
+}: {
+  onMenu: () => void;
+  unreadNotificationCount?: number;
+}) {
   const t = useTranslations();
   const params = useParams();
   const pathname = usePathname();
@@ -51,14 +58,25 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
 
       <div className="flex-1" />
 
-      <Button
-        variant="ghost"
-        size="icon"
-        render={<Link href={`/${locale}/notifications`} />}
-        title={t("nav.notifications")}
-      >
-        <Bell className="h-5 w-5" />
-      </Button>
+      <div className="relative">
+        <Button
+          variant="ghost"
+          size="icon"
+          nativeButton={false}
+          render={<Link href={`/${locale}/notifications`} />}
+          title={t("nav.notifications")}
+        >
+          <Bell className="h-5 w-5" />
+        </Button>
+        {unreadNotificationCount > 0 && (
+          <Badge
+            variant="destructive"
+            className="absolute -right-1 -top-1 h-4 min-w-4 justify-center px-1 text-[10px]"
+          >
+            {unreadNotificationCount > 9 ? "9+" : unreadNotificationCount}
+          </Badge>
+        )}
+      </div>
 
       <Button variant="ghost" size="icon" onClick={toggleLocale} title={locale === "th" ? "English" : "ไทย"}>
         <Globe className="h-5 w-5" />

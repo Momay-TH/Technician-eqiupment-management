@@ -4,6 +4,7 @@ import { getDB } from "@/lib/db";
 import { STATUS_META } from "@/lib/constants";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
 import { formatMoney } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -75,16 +76,18 @@ export default async function DashboardPage({
             </CardContent>
           </Card>
         ))}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground">
-              {t("dashboard.pendingApprovals")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{pendingRes?.c ?? 0}</p>
-          </CardContent>
-        </Card>
+        <Link href={`/${locale}/checkout?status=pending`} className="block">
+          <Card className="transition-colors hover:bg-muted/40">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-xs font-medium text-muted-foreground">
+                {t("dashboard.pendingApprovals")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold">{pendingRes?.c ?? 0}</p>
+            </CardContent>
+          </Card>
+        </Link>
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-xs font-medium text-muted-foreground">
