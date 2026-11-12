@@ -24,10 +24,13 @@ type ListRow = {
 
 export default async function CheckoutPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ status?: string }>;
 }) {
   const { locale } = await params;
+  const { status: statusFilter } = await searchParams;
   const t = await getTranslations("checkout");
   const ctx = await getAuthContext();
 
@@ -40,13 +43,31 @@ export default async function CheckoutPage({
   }
 
   const db = getDB();
-  const { results } = await db
-    .prepare(
-      "SELECT cr.id, cr.code, cr.status, cr.purpose, cr.expected_return_date, cr.created_at, u.name AS requested_by_name FROM checkout_requests cr LEFT JOIN users u ON u.id = cr.requested_by ORDER BY cr.created_at DESC LIMIT 100",
-    )
-    .all();
+  const validStatus = (["pending", "approved", "rejected", "cancelled", "completed"] as const).includes(
+    statusFilter as CheckoutStatus,
+  )
+    ? (statusFilter as CheckoutStatus)
+    : null;
+
+  const { results } = validStatus
+    ? await db
+        .prepare(
+          "SELECT cr.id, cr.code, cr.status, cr.purpose, cr.expected_return_date, cr.created_at, u.name AS requested_by_name FROM checkout_requests cr LEFT JOIN users u ON u.id = cr.requested_by WHERE cr.status = ? ORDER BY cr.created_at DESC LIMIT 100",
+        )
+        .bind(validStatus)
+        .all()
+    : await db
+        .prepare(
+          "SELECT cr.id, cr.code, cr.status, cr.purpose, cr.expected_return_date, cr.created_at, u.name AS requested_by_name FROM checkout_requests cr LEFT JOIN users u ON u.id = cr.requested_by ORDER BY cr.created_at DESC LIMIT 100",
+        )
+        .all();
 
   const rows = (results ?? []) as ListRow[];
+
+  const { results: pendingRes } = await db
+    .prepare("SELECT COUNT(*) AS c FROM checkout_requests WHERE status = 'pending'")
+    .all();
+  const pendingTotal = (pendingRes as { c: number }[])?.[0]?.c ?? 0;
 
   return (
     <div className="space-y-4">
@@ -58,6 +79,33 @@ export default async function CheckoutPage({
             {t("new")}
           </Button>
         )}
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2">
+        {(
+          [
+            { key: "all", label: locale === "th" ? "ทั้งหมด" : "All", href: `/${locale}/checkout` },
+            { key: "pending", label: `${locale === "th" ? CHECKOUT_STATUS_META.pending.labelTh : CHECKOUT_STATUS_META.pending.labelEn} (${pendingTotal})`, href: `/${locale}/checkout?status=pending` },
+            { key: "approved", label: locale === "th" ? CHECKOUT_STATUS_META.approved.labelTh : CHECKOUT_STATUS_META.approved.labelEn, href: `/${locale}/checkout?status=approved` },
+            { key: "completed", label: locale === "th" ? CHECKOUT_STATUS_META.completed.labelTh : CHECKOUT_STATUS_META.completed.labelEn, href: `/${locale}/checkout?status=completed` },
+            { key: "rejected", label: locale === "th" ? CHECKOUT_STATUS_META.rejected.labelTh : CHECKOUT_STATUS_META.rejected.labelEn, href: `/${locale}/checkout?status=rejected` },
+          ] as const
+        ).map((tab) => {
+          const active = (statusFilter ?? "all") === tab.key;
+          return (
+            <Link
+              key={tab.key}
+              href={tab.href}
+              className={
+                active
+                  ? "rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground"
+                  : "rounded-full border px-3 py-1 text-xs font-medium text-muted-foreground hover:bg-accent"
+              }
+            >
+              {tab.label}
+            </Link>
+          );
+        })}
       </div>
 
       {rows.length === 0 ? (
