@@ -540,7 +540,7 @@ function CreateUserDialog({
             <Input
               value={username}
               onChange={(e) => setUsername(e.target.value.toLowerCase())}
-              pattern="[a-z0-9._-]{3,32}"
+              pattern={"[a-z0-9._\\-]{3,32}"}
               required
             />
             <p className="text-xs text-muted-foreground">
