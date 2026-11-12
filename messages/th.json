@@ -123,6 +123,8 @@
     "purchaseDate": "วันที่ซื้อ",
     "vendor": "ผู้ขาย",
     "warrantyMonths": "ประกัน (เดือน)",
+    "warrantyExpireDate": "วันหมดประกัน",
+    "status": "สถานะ",
     "location": "สถานที่",
     "customerSite": "ลูกค้า/ไซต์",
     "assignedTo": "ผู้รับผิดชอบ",

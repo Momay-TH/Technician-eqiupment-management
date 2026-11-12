@@ -123,6 +123,8 @@
     "purchaseDate": "Purchase Date",
     "vendor": "Vendor",
     "warrantyMonths": "Warranty (months)",
+    "warrantyExpireDate": "Warranty expiry",
+    "status": "Status",
     "location": "Location",
     "customerSite": "Customer / Site",
     "assignedTo": "Assigned To",
