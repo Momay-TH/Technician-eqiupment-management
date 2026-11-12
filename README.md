@@ -138,6 +138,10 @@ npm run cf:dev       # http://localhost:8788
 `npm run dev` cannot use the Cloudflare bindings and `cf:dev` cannot use the `.dev/` fallback —
 they are separate data stores.
 
+> Do not run `npm run build` / `npm run cf:build` while `npm run dev` is running: both write to
+> `.next/` and the dev server will start failing with `Cannot find module './NNNN.js'`.
+> Stop the dev server (or delete `.next/`) and start it again.
+
 > **Windows note:** if `wrangler dev` crashes with `access violation` / `stack overflow` (`workerd`),
 > use mode A, install the latest **Microsoft Visual C++ Redistributable (x64)** and retry, or run
 > Wrangler inside **WSL2**.
