@@ -68,9 +68,9 @@ export default async function EquipmentDetailPage({
        LEFT JOIN locations l ON l.id = e.location_id
        LEFT JOIN customer_sites cs ON cs.id = e.customer_site_id
        LEFT JOIN users u ON u.id = e.assigned_to
-       WHERE e.id = ?`,
+       WHERE e.id = ? OR e.asset_code = ?`,
     )
-    .bind(id)
+    .bind(id, id)
     .first()) as Detail | null;
 
   if (!eq) notFound();
@@ -79,7 +79,7 @@ export default async function EquipmentDetailPage({
     .prepare(
       "SELECT eh.*, u.name AS performed_by_name FROM equipment_history eh LEFT JOIN users u ON u.id = eh.performed_by WHERE eh.equipment_id = ? ORDER BY eh.created_at DESC",
     )
-    .bind(id)
+    .bind(eq.id)
     .all();
 
   const { results: transitions } = await db

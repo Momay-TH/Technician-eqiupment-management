@@ -19,12 +19,13 @@ export default async function CheckoutDetailPage({
   if (!ctx.user) redirect(`/${locale}/login`);
 
   const db = getDB();
-  const req = await db
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+  const req = (await db
     .prepare(
-      "SELECT cr.id, cr.code, cr.status, cr.purpose, cr.expected_return_date, cr.rejection_reason, cr.created_at, cr.approved_at, u.name AS requested_by_name, a.name AS approved_by_name FROM checkout_requests cr LEFT JOIN users u ON u.id = cr.requested_by LEFT JOIN users a ON a.id = cr.approved_by WHERE cr.id = ?",
+      `SELECT cr.id, cr.code, cr.status, cr.purpose, cr.expected_return_date, cr.rejection_reason, cr.created_at, cr.approved_at, u.name AS requested_by_name, a.name AS approved_by_name FROM checkout_requests cr LEFT JOIN users u ON u.id = cr.requested_by LEFT JOIN users a ON a.id = cr.approved_by WHERE ${isUuid ? "cr.id = ?" : "cr.code = ?"}`,
     )
     .bind(id)
-    .first() as any;
+    .first() as any) as any;
 
   if (!req) notFound();
 
