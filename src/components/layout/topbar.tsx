@@ -112,6 +112,16 @@ export function Topbar({
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={logout}
+        title={t("common.logout")}
+        aria-label={t("common.logout")}
+      >
+        <LogOut className="h-5 w-5" />
+      </Button>
     </header>
   );
 }
