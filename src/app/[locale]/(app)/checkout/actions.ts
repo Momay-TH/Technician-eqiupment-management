@@ -13,6 +13,11 @@ function genId(): string {
   return crypto.randomUUID();
 }
 
+// SQLite datetime format ("YYYY-MM-DD HH:MM:SS") for consistent storage/display.
+function nowSql(): string {
+  return new Date().toISOString().slice(0, 19).replace("T", " ");
+}
+
 async function nextCheckoutCode(): Promise<string> {
   const db = getDB();
   const year = new Date().getFullYear();
@@ -45,15 +50,34 @@ export async function createCheckoutAction(input: { equipmentIds: string[]; purp
   if (ids.length === 0) return { ok: false, error: "NO_ITEMS" };
 
   const db = getDB();
+  const placeholders = ids.map(() => "?").join(",");
 
-  // validate availability
+  // Batch validation: one query for equipment rows + one for busy items
+  // instead of a per-item query loop.
+  const eqRows = (await db
+    .prepare(`SELECT id, status, is_archived FROM equipment WHERE id IN (${placeholders})`)
+    .bind(...ids)
+    .all()) as { results?: any[] };
+  const byId = new Map((eqRows.results ?? []).map((r) => [r.id, r]));
+
+  const busyRows = (await db
+    .prepare(
+      `SELECT cri.equipment_id AS equipment_id
+       FROM checkout_request_items cri
+       JOIN equipment e ON e.id = cri.equipment_id
+       WHERE cri.equipment_id IN (${placeholders}) AND cri.status = 'checked_out'`,
+    )
+    .bind(...ids)
+    .all()) as { results?: any[] };
+  const busyIds = new Set((busyRows.results ?? []).map((r) => r.equipment_id));
+
+  const AVAILABLE_STATUSES = ["in_stock", "in_vehicle", "at_site"];
   for (const id of ids) {
-    const eq = await db.prepare("SELECT id, status, is_archived FROM equipment WHERE id = ?").bind(id).first();
-    if (!eq || eq.is_archived || !["in_stock", "in_vehicle", "at_site"].includes(eq.status)) {
+    const eq = byId.get(id);
+    if (!eq || eq.is_archived || !AVAILABLE_STATUSES.includes(eq.status)) {
       return { ok: false, error: "ITEM_NOT_AVAILABLE" };
     }
-    const active = await db.prepare("SELECT id FROM checkout_request_items WHERE equipment_id = ? AND status = 'checked_out'").bind(id).first();
-    if (active) return { ok: false, error: "ITEM_ALREADY_CHECKED_OUT" };
+    if (busyIds.has(id)) return { ok: false, error: "ITEM_ALREADY_CHECKED_OUT" };
   }
 
   const code = await nextCheckoutCode();
@@ -101,9 +125,8 @@ export async function approveCheckoutAction(requestId: string): Promise<Result> 
 
   await db
     .prepare("UPDATE checkout_requests SET status = 'approved', approved_by = ?, approved_at = ?, rejection_reason = NULL WHERE id = ?")
-    .bind(ctx.user.id, new Date().toISOString(), requestId)
+    .bind(ctx.user.id, nowSql(), requestId)
     .run();
-
   await db
     .prepare("INSERT INTO audit_logs (id, actor_id, action, target_type, target_id, before, after) VALUES (?, ?, ?, ?, ?, ?, ?)")
     .bind(genId(), ctx.user.id, "checkout.approve", "checkout_request", requestId, JSON.stringify({ status: req.status }), JSON.stringify({ status: "approved" }))
@@ -128,7 +151,7 @@ export async function rejectCheckoutAction(requestId: string, reason: string): P
 
   await db
     .prepare("UPDATE checkout_requests SET status = 'rejected', rejection_reason = ?, approved_by = ?, approved_at = ? WHERE id = ?")
-    .bind(reason.trim(), ctx.user.id, new Date().toISOString(), requestId)
+    .bind(reason.trim(), ctx.user.id, nowSql(), requestId)
     .run();
 
   await db
@@ -214,7 +237,7 @@ export async function returnItemAction(requestId: string, assetCode: string, con
   const match = (itemRows ?? []).find((row: any) => row.asset_code.toLowerCase() === assetCode.trim().toLowerCase());
   if (!match) return { ok: false, error: "ITEM_NOT_FOUND" };
 
-  const nextStatus = condition === "good" ? "in_stock" : "under_repair";
+  const nextStatus = condition === "good" ? "in_stock" : "damaged_pending_dispose";
   const nextItemStatus = condition === "good" ? "returned" : "damaged";
 
   await db

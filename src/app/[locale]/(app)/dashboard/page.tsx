@@ -5,7 +5,7 @@ import { STATUS_META } from "@/lib/constants";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { formatMoney } from "@/lib/format";
+import { formatMoney, bangkokDayKey } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -18,16 +18,23 @@ export default async function DashboardPage({
   const t = await getTranslations();
   const db = getDB();
 
-  const { results: equipment } = await db
-    .prepare("SELECT status, purchase_price FROM equipment WHERE is_archived = 0")
+  const { results: statusRows } = await db
+    .prepare(
+      `SELECT status, COUNT(*) AS c, COALESCE(SUM(purchase_price), 0) AS total
+       FROM equipment
+       WHERE is_archived = 0
+       GROUP BY status`,
+    )
     .all();
 
-  const rows = (equipment ?? []) as { status: string; purchase_price: number | null }[];
-
+  const statusCounts = (statusRows ?? []) as { status: string; c: number; total: number }[];
   const counts: Record<string, number> = {};
-  for (const s of STATUS_META) counts[s.value] = rows.filter((r) => r.status === s.value).length;
-
-  const totalValue = rows.reduce((sum, r) => sum + (r.purchase_price ?? 0), 0);
+  let totalValue = 0;
+  for (const s of STATUS_META) {
+    const row = statusCounts.find((r) => r.status === s.value);
+    counts[s.value] = row?.c ?? 0;
+    totalValue += row?.total ?? 0;
+  }
 
   const pendingRes = await db
     .prepare("SELECT COUNT(*) AS c FROM checkout_requests WHERE status = 'pending'")
@@ -35,8 +42,9 @@ export default async function DashboardPage({
 
   const overdueRes = await db
     .prepare(
-      "SELECT COUNT(*) AS c FROM checkout_requests WHERE status = 'approved' AND expected_return_date < date('now')",
+      "SELECT COUNT(*) AS c FROM checkout_requests WHERE status = 'approved' AND expected_return_date < ?",
     )
+    .bind(bangkokDayKey(new Date()))
     .first();
 
   const { results: recent } = await db
@@ -60,7 +68,7 @@ export default async function DashboardPage({
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold">{rows.length}</p>
+            <p className="text-2xl font-bold">{statusCounts.reduce((sum, r) => sum + r.c, 0)}</p>
             <p className="text-xs text-muted-foreground">{formatMoney(totalValue, locale)}</p>
           </CardContent>
         </Card>

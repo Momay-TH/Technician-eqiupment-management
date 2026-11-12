@@ -30,6 +30,14 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  // Bare locale root (e.g. /th) -> dashboard (or login when signed out).
+  if (segments.length === 1) {
+    const url = request.nextUrl.clone();
+    url.pathname = hasSession ? `/${locale}/dashboard` : `/${locale}/login`;
+    url.search = "";
+    return NextResponse.redirect(url);
+  }
+
   return handleI18n(request);
 }
 

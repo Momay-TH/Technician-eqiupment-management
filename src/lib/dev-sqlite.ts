@@ -57,7 +57,11 @@ function openDatabase(): any {
 
   if (!ready) {
     const dir = nodePath().join(process.cwd(), "migrations", "d1");
-    for (const file of ["0001_init.sql", "0002_seed.sql"]) {
+    const files = fs()
+      .readdirSync(dir)
+      .filter((f: string) => f.endsWith(".sql"))
+      .sort();
+    for (const file of files) {
       db.exec(fs().readFileSync(nodePath().join(dir, file), "utf8"));
     }
     // eslint-disable-next-line no-console

@@ -15,7 +15,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { StatusBadge } from "@/components/equipment/status-badge";
-import { formatMoney, formatDate } from "@/lib/format";
+import { formatMoney, formatDate, bangkokDayKey } from "@/lib/format";
 import { downloadCSV } from "@/lib/csv-export";
 import { Download, Package, ArrowLeftRight, ClockAlert, TrendingDown, ShieldAlert } from "lucide-react";
 import type { EquipmentStatus } from "@/lib/constants";
@@ -112,7 +112,7 @@ export function ReportsView({
   };
 
   // Report 3: Overdue
-  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayStr = bangkokDayKey(new Date());
   const overdueItems = checkouts.filter(
     (c) => c.status === "approved" && c.expected_return_date < todayStr,
   );
