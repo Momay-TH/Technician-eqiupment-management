@@ -38,8 +38,8 @@ const nextConfig = {
         headers: securityHeaders,
       },
       {
-        // Never let browsers cache authenticated API responses.
-        source: "/api/:path*",
+        // Never let browsers cache auth responses.
+        source: "/api/auth/:path*",
         headers: [
           { key: "Cache-Control", value: "no-store, max-age=0" },
         ],
