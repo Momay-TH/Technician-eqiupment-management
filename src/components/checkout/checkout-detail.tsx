@@ -369,6 +369,10 @@ export function CheckoutDetail({
                     onValueChange={(v) =>
                       setReturnCondition((v ?? "good") as "good" | "damaged")
                     }
+                    items={[
+                      { value: "good", label: t("conditionGood") },
+                      { value: "damaged", label: t("conditionDamaged") },
+                    ]}
                   >
                     <SelectTrigger className="w-full">
                       <SelectValue />

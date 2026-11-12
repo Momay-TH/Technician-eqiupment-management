@@ -101,7 +101,17 @@ export function EquipmentList({
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <Select value={status} onValueChange={(v) => setStatus(v ?? "all")}>
+        <Select
+          value={status}
+          onValueChange={(v) => setStatus(v ?? "all")}
+          items={[
+            { value: "all", label: t("equipment.filterStatus") },
+            ...STATUS_META.map((s) => ({
+              value: s.value,
+              label: locale === "th" ? s.labelTh : s.labelEn,
+            })),
+          ]}
+        >
           <SelectTrigger className="md:w-48">
             <SelectValue placeholder={t("equipment.filterStatus")} />
           </SelectTrigger>
@@ -114,7 +124,14 @@ export function EquipmentList({
             ))}
           </SelectContent>
         </Select>
-        <Select value={category} onValueChange={(v) => setCategory(v ?? "all")}>
+        <Select
+          value={category}
+          onValueChange={(v) => setCategory(v ?? "all")}
+          items={[
+            { value: "all", label: t("equipment.filterCategory") },
+            ...categories.map((c) => ({ value: c, label: c })),
+          ]}
+        >
           <SelectTrigger className="md:w-44">
             <SelectValue placeholder={t("equipment.filterCategory")} />
           </SelectTrigger>

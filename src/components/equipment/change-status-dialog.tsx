@@ -94,7 +94,14 @@ export function ChangeStatusDialog({
         <div className="space-y-4">
           <div className="space-y-2">
             <Label>{t("common.status")}</Label>
-            <Select value={status} onValueChange={(v) => setStatus(v ?? "")}>
+            <Select
+            value={status}
+            onValueChange={(v) => setStatus(v ?? "")}
+            items={options.map((s) => ({
+              value: s.value,
+              label: locale === "th" ? s.labelTh : s.labelEn,
+            }))}
+          >
               <SelectTrigger>
                 <SelectValue placeholder={t("equipment.selectStatus")} />
               </SelectTrigger>
@@ -110,7 +117,14 @@ export function ChangeStatusDialog({
 
           <div className="space-y-2">
             <Label>{t("equipment.location")}</Label>
-            <Select value={locationId} onValueChange={(v) => setLocationId(v ?? NONE)}>
+            <Select
+            value={locationId}
+            onValueChange={(v) => setLocationId(v ?? NONE)}
+            items={[
+              { value: NONE, label: "-" },
+              ...locations.map((l) => ({ value: l.id, label: l.name })),
+            ]}
+          >
               <SelectTrigger>
                 <SelectValue placeholder={t("equipment.selectLocation")} />
               </SelectTrigger>
@@ -127,7 +141,14 @@ export function ChangeStatusDialog({
 
           <div className="space-y-2">
             <Label>{t("equipment.customerSite")}</Label>
-            <Select value={siteId} onValueChange={(v) => setSiteId(v ?? NONE)}>
+            <Select
+            value={siteId}
+            onValueChange={(v) => setSiteId(v ?? NONE)}
+            items={[
+              { value: NONE, label: "-" },
+              ...sites.map((s) => ({ value: s.id, label: s.name })),
+            ]}
+          >
               <SelectTrigger>
                 <SelectValue placeholder={t("equipment.selectSite")} />
               </SelectTrigger>

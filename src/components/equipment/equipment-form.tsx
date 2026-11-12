@@ -235,7 +235,16 @@ export function EquipmentForm({
 
             <div className="space-y-2 md:col-span-2">
               <Label>{t("equipment.model")} *</Label>
-              <Select value={modelId} onValueChange={(v) => setModelId(v ?? "")}>
+              <Select
+              value={modelId}
+              onValueChange={(v) => setModelId(v ?? "")}
+              items={sortedModels.map((m) => ({
+                value: m.id,
+                label: [m.categoryName, m.deviceTypeName, m.brandName, m.name]
+                  .filter(Boolean)
+                  .join(" · "),
+              }))}
+            >
                 <SelectTrigger>
                   <SelectValue placeholder={t("equipment.selectModel")} />
                 </SelectTrigger>
@@ -256,6 +265,10 @@ export function EquipmentForm({
               <Select
                 value={status}
                 onValueChange={(v) => setStatus((v ?? "in_stock") as EquipmentStatus)}
+                items={STATUS_META.map((s) => ({
+                  value: s.value,
+                  label: locale === "th" ? s.labelTh : s.labelEn,
+                }))}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -272,7 +285,14 @@ export function EquipmentForm({
 
             <div className="space-y-2">
               <Label>{t("equipment.location")}</Label>
-              <Select value={locationId} onValueChange={(v) => setLocationId(v ?? NONE)}>
+              <Select
+              value={locationId}
+              onValueChange={(v) => setLocationId(v ?? NONE)}
+              items={[
+                { value: NONE, label: "-" },
+                ...locations.map((l) => ({ value: l.id, label: l.name })),
+              ]}
+            >
                 <SelectTrigger>
                   <SelectValue placeholder={t("equipment.selectLocation")} />
                 </SelectTrigger>
@@ -289,7 +309,14 @@ export function EquipmentForm({
 
             <div className="space-y-2">
               <Label>{t("equipment.customerSite")}</Label>
-              <Select value={siteId} onValueChange={(v) => setSiteId(v ?? NONE)}>
+              <Select
+              value={siteId}
+              onValueChange={(v) => setSiteId(v ?? NONE)}
+              items={[
+                { value: NONE, label: "-" },
+                ...sites.map((s) => ({ value: s.id, label: s.name })),
+              ]}
+            >
                 <SelectTrigger>
                   <SelectValue placeholder={t("equipment.selectSite")} />
                 </SelectTrigger>
@@ -306,7 +333,14 @@ export function EquipmentForm({
 
             <div className="space-y-2">
               <Label>{t("equipment.assignedTo")}</Label>
-              <Select value={assignedTo} onValueChange={(v) => setAssignedTo(v ?? NONE)}>
+              <Select
+              value={assignedTo}
+              onValueChange={(v) => setAssignedTo(v ?? NONE)}
+              items={[
+                { value: NONE, label: "-" },
+                ...technicians.map((u) => ({ value: u.id, label: u.name })),
+              ]}
+            >
                 <SelectTrigger>
                   <SelectValue placeholder={t("equipment.selectTechnician")} />
                 </SelectTrigger>
@@ -369,7 +403,14 @@ export function EquipmentForm({
 
             <div className="space-y-2">
               <Label>{t("equipment.installedBy")}</Label>
-              <Select value={installedBy} onValueChange={(v) => setInstalledBy(v ?? NONE)}>
+              <Select
+              value={installedBy}
+              onValueChange={(v) => setInstalledBy(v ?? NONE)}
+              items={[
+                { value: NONE, label: "-" },
+                ...technicians.map((u) => ({ value: u.id, label: u.name })),
+              ]}
+            >
                 <SelectTrigger>
                   <SelectValue placeholder={t("equipment.selectTechnician")} />
                 </SelectTrigger>

@@ -120,6 +120,10 @@ export function QrLabelPrint({
           <Select
             value={format}
             onValueChange={(v) => setFormat((v ?? "a4") as Format)}
+            items={[
+              { value: "thermal", label: t("thermal") },
+              { value: "a4", label: t("a4") },
+            ]}
           >
             <SelectTrigger className="w-full">
               <SelectValue />

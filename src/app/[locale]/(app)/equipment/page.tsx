@@ -25,10 +25,13 @@ export default async function EquipmentPage({
   const { results } = await db
     .prepare(
       `SELECT e.id, e.asset_code, e.serial_number, e.name, e.status, e.purchase_price,
-              m.name AS model_name, b.name AS brand_name, l.name AS location_name
+              m.name AS model_name, b.name AS brand_name, c.name AS category_name,
+              dt.name AS device_type_name, l.name AS location_name
        FROM equipment e
        JOIN models m ON m.id = e.model_id
        JOIN brands b ON b.id = m.brand_id
+       JOIN device_types dt ON dt.id = m.device_type_id
+       JOIN categories c ON c.id = dt.category_id
        LEFT JOIN locations l ON l.id = e.location_id
        WHERE e.is_archived = 0
        ORDER BY e.asset_code`,
@@ -41,10 +44,13 @@ export default async function EquipmentPage({
     serial_number: r.serial_number,
     name: r.name,
     status: r.status as EquipmentStatus,
-    model_name: r.model_name,
-    brand_name: r.brand_name,
-    location_name: r.location_name,
     purchase_price: r.purchase_price,
+    model: {
+      name: r.model_name,
+      brand: { name: r.brand_name },
+      device_type: { name: r.device_type_name, category: { name: r.category_name } },
+    },
+    location: r.location_name ? { name: r.location_name } : null,
   }));
 
   return (

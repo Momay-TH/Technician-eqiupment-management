@@ -178,6 +178,15 @@ function LocationDialog({
             <Select
               value={type}
               onValueChange={(v) => setType((v ?? "warehouse") as LocationType)}
+              items={(
+                Object.keys(LOCATION_TYPE_META) as LocationType[]
+              ).map((key) => ({
+                value: key,
+                label:
+                  locale === "th"
+                    ? LOCATION_TYPE_META[key].labelTh
+                    : LOCATION_TYPE_META[key].labelEn,
+              }))}
             >
               <SelectTrigger className="w-full">
                 <SelectValue />

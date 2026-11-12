@@ -192,7 +192,7 @@ export function CatalogManager({
           {children}
         </div>
         <div className="flex items-center gap-1">
-          {isArchived && (
+          {Boolean(isArchived) && (
             <Badge variant="secondary">{t("archived")}</Badge>
           )}
           {actions}
@@ -511,6 +511,7 @@ function DeviceTypeDialog({
             <Select
               value={categoryId}
               onValueChange={(v) => setCategoryId(v ?? "")}
+              items={categories.map((c) => ({ value: c.id, label: c.name }))}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder={t("selectCategory")} />
@@ -672,7 +673,11 @@ function ModelDialog({
         <form onSubmit={submit} className="space-y-3">
           <div className="space-y-2">
             <Label>{t("selectBrand")}</Label>
-            <Select value={brandId} onValueChange={(v) => setBrandId(v ?? "")}>
+            <Select
+              value={brandId}
+              onValueChange={(v) => setBrandId(v ?? "")}
+              items={brands.map((b) => ({ value: b.id, label: b.name }))}
+            >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder={t("selectBrand")} />
               </SelectTrigger>
@@ -690,6 +695,7 @@ function ModelDialog({
             <Select
               value={deviceTypeId}
               onValueChange={(v) => setDeviceTypeId(v ?? "")}
+              items={deviceTypes.map((d) => ({ value: d.id, label: d.name }))}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder={t("selectDeviceType")} />

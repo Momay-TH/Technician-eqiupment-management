@@ -232,6 +232,10 @@ export function UsersManager({
                       void changeRole(user, (v ?? user.role) as UserRole)
                     }
                     disabled={busyId === user.id}
+                    items={ROLES.map((r) => ({
+                      value: r.value,
+                      label: locale === "th" ? r.labelTh : r.labelEn,
+                    }))}
                   >
                     <SelectTrigger className="w-36">
                       <SelectValue />
@@ -331,6 +335,10 @@ export function UsersManager({
                     void changeRole(user, (v ?? user.role) as UserRole)
                   }
                   disabled={busyId === user.id}
+                  items={ROLES.map((r) => ({
+                    value: r.value,
+                    label: locale === "th" ? r.labelTh : r.labelEn,
+                  }))}
                 >
                   <SelectTrigger className="w-36">
                     <SelectValue />
@@ -552,6 +560,10 @@ function CreateUserDialog({
             <Select
               value={role}
               onValueChange={(v) => setRole((v ?? "technician") as UserRole)}
+              items={ROLES.map((r) => ({
+                value: r.value,
+                label: locale === "th" ? r.labelTh : r.labelEn,
+              }))}
             >
               <SelectTrigger className="w-full">
                 <SelectValue />

@@ -181,6 +181,10 @@ export function PermissionsMatrix({
             <Select
               value={selectedId}
               onValueChange={(v) => setSelectedId(v ?? "")}
+              items={users.map((u) => ({
+                value: u.id,
+                label: `${u.name} (@${u.username})`,
+              }))}
             >
               <SelectTrigger className="w-full">
                 <SelectValue />
@@ -266,6 +270,10 @@ export function PermissionsMatrix({
                             )
                           }
                           disabled={busy}
+                          items={EFFECTS.map((e) => ({
+                            value: e,
+                            label: t(e),
+                          }))}
                         >
                           <SelectTrigger className="w-36">
                             <SelectValue />
