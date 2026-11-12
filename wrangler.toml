@@ -1,0 +1,29 @@
+name = "technician-equipment-management"
+main = ".open-next/worker.js"
+compatibility_date = "2024-12-01"
+compatibility_flags = ["nodejs_compat"]
+
+[observability]
+enabled = true
+
+[assets]
+directory = ".open-next/assets"
+binding = "ASSETS"
+
+# D1 database (`wrangler d1 list` shows the id).
+[[d1_databases]]
+binding = "DB"
+database_name = "technician-equipment"
+database_id = "df331396-b049-41ee-a1d8-0b6c3e6f362d"
+migrations_dir = "migrations/d1"
+
+# R2 bucket for equipment photos/receipts.
+# 1. Enable R2 once in the Cloudflare dashboard (Storage & Databases -> R2).
+# 2. `wrangler r2 bucket create technician-equipment-files`
+# 3. Uncomment the block below and rebuild.
+# Until then the upload UI reports that storage is not configured and everything
+# else keeps working.
+#
+# [[r2_buckets]]
+# binding = "STORAGE"
+# bucket_name = "technician-equipment-files"

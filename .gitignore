@@ -16,6 +16,15 @@
 # production
 /build
 
+# cloudflare
+/.open-next/
+/.wrangler/
+.dev.vars*
+
+# agent tooling (local only)
+/.agents/
+/skills-lock.json
+
 # misc
 .DS_Store
 *.pem
